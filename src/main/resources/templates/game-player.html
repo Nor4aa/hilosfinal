@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Jugando...</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <style>
+        .opt-btn { height: 100px; font-size: 1.2rem; margin-bottom: 10px; }
+    </style>
+</head>
+<body class="bg-light">
+    <div class="container mt-3">
+        <h4>Jugador: <span th:text="${playerName}"></span></h4>
+        <div id="status" class="alert alert-info">Conectado a sala. Esperando...</div>
+
+        <div id="question-container" style="display:none;">
+            <h3 id="q-text" class="mb-4">Pregunta</h3>
+            <div class="row">
+                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(1)" id="btn1">A</button></div>
+                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(2)" id="btn2">B</button></div>
+                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(3)" id="btn3">C</button></div>
+                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(4)" id="btn4">D</button></div>
+            </div>
+        </div>
+    </div>
+
+    <script th:inline="javascript">
+        /*<![CDATA[*/
+        var pin = /*[[${pin}]]*/ '0000';
+        var lastIndex = -1;
+
+        setInterval(function() {
+            $.get('/game/player/poll?pin=' + pin, function(data) {
+                 if (data.status === 'FINISHED') {
+                     $('#status').text("Juego Terminado. Gracias por jugar.");
+                     $('#question-container').hide();
+                     return;
+                 }
+
+                 if (data.isOpen) {
+                     $('#status').text("¡Pregunta Activa!");
+                     $('#status').removeClass('alert-warning').addClass('alert-success');
+                     $('#question-container').show();
+
+                     // Update Text if new question
+                     if (data.questionIndex !== lastIndex) {
+                         $('#q-text').text(data.questionText);
+                         $('#btn1').text(data.options[0]);
+                         $('#btn2').text(data.options[1]);
+                         $('#btn3').text(data.options[2]);
+                         $('#btn4').text(data.options[3]);
+                         $('.opt-btn').prop('disabled', false); // Enable buttons
+                         lastIndex = data.questionIndex;
+                     }
+                 } else {
+                     $('#status').text("Tiempo agotado o Esperando siguiente...");
+                     $('#status').removeClass('alert-success').addClass('alert-warning');
+                     $('.opt-btn').prop('disabled', true);
+                 }
+            });
+        }, 1000);
+
+        function send(option) {
+            $.post('/game/submit', { option: option }, function(res) {
+                if(res === 'OK') {
+                    // Disable buttons immediately to prevent double vote
+                    $('.opt-btn').prop('disabled', true);
+                }
+            });
+        }
+        /*]]>*/
+    </script>
+</body>
+</html>

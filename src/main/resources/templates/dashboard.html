@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Dashboard</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body>
+    <div class="container mt-4">
+        <h2>Hola, <span th:text="${user.username}">User</span></h2>
+        
+        <div class="row mt-4">
+            <div class="col-md-4">
+                <div class="card p-3">
+                    <h4>Crear Sala</h4>
+                    <form action="/create-room" method="post">
+                        <div class="mb-3">
+                            <label>Bloque de Preguntas</label>
+                            <select name="blockId" class="form-control">
+                                <option th:each="block : ${blocks}" th:value="${block.id}" th:text="${block.name}"></option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label>Número de Preguntas</label>
+                            <input type="number" name="numQuestions" value="5" class="form-control">
+                        </div>
+                        <div class="mb-3">
+                            <label>Segundos por Pregunta</label>
+                            <input type="number" name="secondsPerQuestion" value="10" class="form-control">
+                        </div>
+                        <button class="btn btn-primary w-100">Crear Sala (PIN)</button>
+                    </form>
+                </div>
+                
+                <div class="mt-3">
+                   <a href="#" class="btn btn-secondary w-100 disabled">Gestionar Mis Bloques (TODO)</a>
+                </div>
+            </div>
+            
+            <div class="col-md-8">
+                <h4>Mis Bloques (Resumen)</h4>
+                <ul class="list-group">
+                    <li class="list-group-item" th:each="block : ${blocks}">
+                        <strong th:text="${block.name}">Nombre</strong> - 
+                        <span th:text="${#lists.size(block.questions)}">0</span> preguntas
+                    </li>
+                </ul>
+                <div th:if="${#lists.isEmpty(blocks)}" class="alert alert-warning mt-2">
+                    No tienes bloques. (Se crearán automáticamente al inicio para pruebas)
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
