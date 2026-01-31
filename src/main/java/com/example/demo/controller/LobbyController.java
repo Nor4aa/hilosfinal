@@ -36,21 +36,8 @@ public class LobbyController {
 
     @PostMapping("/login")
     public String login(@RequestParam String username, HttpSession session) {
-        // Simple login/register logic: Try to find, otherwise create
-        Optional<User> userOpt = userService.login(username, "password");
-        User user;
-        if (userOpt.isPresent()) {
-            user = userOpt.get();
-        } else {
-            // If not found, try to register (it might fail if someone else created it in
-            // between)
-            try {
-                user = userService.registerUser(username, "password");
-            } catch (Exception e) {
-                // Fallback: search again or show error
-                user = userService.login(username, "password").orElse(null);
-            }
-        }
+        // Simplified for practice: Login if exists, otherwise create
+        User user = userService.getOrCreateUser(username);
 
         if (user != null) {
             session.setAttribute("user", user);

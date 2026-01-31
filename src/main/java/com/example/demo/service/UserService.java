@@ -29,6 +29,11 @@ public class UserService {
         return Optional.empty();
     }
 
+    public User getOrCreateUser(String username) {
+        return userRepository.findByUsername(username)
+                .orElseGet(() -> userRepository.save(new User(username, "1234")));
+    }
+
     public User findById(Long id) {
         return userRepository.findById(id).orElse(null);
     }
