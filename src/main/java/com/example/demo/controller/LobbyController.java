@@ -1,6 +1,8 @@
 package com.example.demo.controller;
 
+import com.example.demo.engine.ActiveRoom;
 import com.example.demo.engine.GameEngine;
+
 import com.example.demo.model.Block;
 import com.example.demo.model.Room;
 import com.example.demo.model.User;
@@ -99,21 +101,45 @@ public class LobbyController {
 
     @GetMapping("/lobby/{pin}")
     public String lobby(@PathVariable String pin, Model model, HttpSession session) {
-        model.addAttribute("pin", pin);
+        String trimmedPin = pin.trim();
+        ActiveRoom activeRoom = gameEngine.getRoom(trimmedPin);
+
+        // Rehydrate if not in memory but in DB
+        if (activeRoom == null) {
+            Optional<Room> roomDb = roomService.getRoomByPin(trimmedPin);
+            if (roomDb.isPresent() && roomDb.get().getStatus() != Room.RoomStatus.FINISHED) {
+                gameEngine.createGame(roomDb.get(), roomDb.get().getBlock().getQuestions());
+            }
+        }
+
+        model.addAttribute("pin", trimmedPin);
         return "lobby-host";
     }
 
     @PostMapping("/join")
     public String join(@RequestParam String pin, @RequestParam String playerName, HttpSession session) {
-        if (gameEngine.getRoom(pin) == null) {
+        String trimmedPin = pin.trim();
+        ActiveRoom activeRoom = gameEngine.getRoom(trimmedPin);
+
+        // If not in memory but exists in DB, rehydrate it
+        if (activeRoom == null) {
+            Optional<Room> roomDb = roomService.getRoomByPin(trimmedPin);
+            if (roomDb.isPresent() && roomDb.get().getStatus() != Room.RoomStatus.FINISHED) {
+                gameEngine.createGame(roomDb.get(), roomDb.get().getBlock().getQuestions());
+                activeRoom = gameEngine.getRoom(trimmedPin);
+            }
+        }
+
+        if (activeRoom == null) {
             return "redirect:/?error=RoomNotFound";
         }
 
-        gameEngine.joinPlayer(pin, playerName);
+        gameEngine.joinPlayer(trimmedPin, playerName);
 
         session.setAttribute("playerName", playerName);
-        session.setAttribute("pin", pin);
+        session.setAttribute("pin", trimmedPin);
 
         return "redirect:/game/player";
     }
+
 }
