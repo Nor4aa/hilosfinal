@@ -121,7 +121,11 @@ public class LobbyController {
             return "redirect:/?error=RoomNotFound";
         }
 
-        gameEngine.joinPlayer(trimmedPin, playerName);
+        boolean joined = gameEngine.joinPlayer(trimmedPin, playerName);
+        if (!joined) {
+            // Evitar nombres duplicados dentro de la misma sala
+            return "redirect:/?error=Nombre%20ya%20en%20uso%20en%20esta%20sala";
+        }
 
         session.setAttribute("playerName", playerName);
         session.setAttribute("pin", trimmedPin);

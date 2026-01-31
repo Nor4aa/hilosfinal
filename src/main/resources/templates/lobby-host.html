@@ -31,6 +31,9 @@
     <script th:inline="javascript">
         /*<![CDATA[*/
         var pin = /*[[${pin}]]*/ '0000';
+
+        // Empezamos a hacer polling nada más cargar la vista para ver jugadores conectados
+        startPolling();
         
         $('#btn-start').click(function() {
             $.post('/game/' + pin + '/start', function(res) {
@@ -38,7 +41,6 @@
                     $('#btn-start').hide();
                     $('#status-msg').text('Juego Iniciado!');
                     $('#question-area').show();
-                    startPolling();
                 }
             });
         });
@@ -63,7 +65,7 @@
                          $('#timer').css('color', 'red');
                     }
 
-                    // Update Ranking
+                    // Update Ranking (también hace de lista de jugadores conectados)
                     var list = $('#ranking-list');
                     list.empty();
                     $.each(data.ranking, function(player, score) {

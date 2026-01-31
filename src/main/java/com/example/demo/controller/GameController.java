@@ -90,6 +90,7 @@ public class GameController {
                 "questionIndex", room.getCurrentQuestionIndex(),
                 "isOpen", isOpen,
                 "questionText", (isOpen && q != null) ? q.getEnunciado() : "Wait...",
-                "options", (isOpen && q != null) ? List.of(q.getOp1(), q.getOp2(), q.getOp3(), q.getOp4()) : List.of());
+                "options", (isOpen && q != null) ? List.of(q.getOp1(), q.getOp2(), q.getOp3(), q.getOp4()) : List.of(),
+                "ranking", room.getRanking());
     }
 }

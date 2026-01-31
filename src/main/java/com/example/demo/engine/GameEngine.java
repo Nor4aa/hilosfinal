@@ -44,11 +44,12 @@ public class GameEngine {
         return activeRooms.get(pin);
     }
 
-    public void joinPlayer(String pin, String playerName) {
+    public boolean joinPlayer(String pin, String playerName) {
         ActiveRoom room = activeRooms.get(pin);
         if (room != null) {
-            room.addPlayer(playerName);
+            return room.addPlayer(playerName);
         }
+        return false;
     }
 
     public void startGame(String pin) {

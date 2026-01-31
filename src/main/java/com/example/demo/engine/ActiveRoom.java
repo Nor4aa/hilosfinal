@@ -51,8 +51,13 @@ public class ActiveRoom {
         logger.info("[Room {}] Initalized with {} questions.", pin, questions.size());
     }
 
-    public void addPlayer(String playerName) {
-        playerScores.putIfAbsent(playerName, 0);
+    /**
+     * Añade un jugador a la sala activa.
+     *
+     * @return true si el jugador se ha registrado nuevo, false si ya existía
+     */
+    public boolean addPlayer(String playerName) {
+        return playerScores.putIfAbsent(playerName, 0) == null;
     }
 
     public void startGame() {
@@ -76,7 +81,8 @@ public class ActiveRoom {
 
         // Schedule timer to close question
         timerScheduler.schedule(() -> {
-            logger.info("[Room {}] [Timer] Time up for question {}!", pin, index + 1);
+            String threadName = Thread.currentThread().getName();
+            logger.info("[Room {}] [{}] [Timer] Time up for question {}!", pin, threadName, index + 1);
             closeQuestion();
         }, secondsPerQuestion, TimeUnit.SECONDS);
     }
