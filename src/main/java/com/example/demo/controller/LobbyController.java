@@ -34,10 +34,28 @@ public class LobbyController {
 
     @PostMapping("/login")
     public String login(@RequestParam String username, HttpSession session) {
-        // Simple login (create if not exists for demo)
-        User user = userService.registerUser(username, "password"); // Simplified
-        session.setAttribute("user", user);
-        return "redirect:/dashboard";
+        // Simple login/register logic: Try to find, otherwise create
+        Optional<User> userOpt = userService.login(username, "password");
+        User user;
+        if (userOpt.isPresent()) {
+            user = userOpt.get();
+        } else {
+            // If not found, try to register (it might fail if someone else created it in
+            // between)
+            try {
+                user = userService.registerUser(username, "password");
+            } catch (Exception e) {
+                // Fallback: search again or show error
+                user = userService.login(username, "password").orElse(null);
+            }
+        }
+
+        if (user != null) {
+            session.setAttribute("user", user);
+            return "redirect:/dashboard";
+        } else {
+            return "redirect:/?error=LoginFailed";
+        }
     }
 
     @GetMapping("/dashboard")
