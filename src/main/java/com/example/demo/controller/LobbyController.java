@@ -34,9 +34,10 @@ public class LobbyController {
         return "index";
     }
 
+    //Recibe el nombre de usuario del formulario de login.
     @PostMapping("/login")
     public String login(@RequestParam String username, HttpSession session) {
-        // Simplified for practice: Login if exists, otherwise create
+      
         User user = userService.getOrCreateUser(username);
 
         if (user != null) {
@@ -53,7 +54,6 @@ public class LobbyController {
         if (user == null)
             return "redirect:/";
 
-        // Refresh user from DB to get blocks
         user = userService.findById(user.getId());
 
         model.addAttribute("user", user);
@@ -77,7 +77,7 @@ public class LobbyController {
         try {
             Room room = roomService.createRoom(user, blockOpt.get(), numQuestions, secondsPerQuestion, true);
 
-            // Initialize in GameEngine
+            
             gameEngine.createGame(room, blockOpt.get().getQuestions());
 
             return "redirect:/lobby/" + room.getPin();
@@ -105,10 +105,10 @@ public class LobbyController {
 
     @PostMapping("/join")
     public String join(@RequestParam String pin, @RequestParam String playerName, HttpSession session) {
+    	
         String trimmedPin = pin.trim();
         ActiveRoom activeRoom = gameEngine.getRoom(trimmedPin);
 
-        // If not in memory but exists in DB, rehydrate it
         if (activeRoom == null) {
             Optional<Room> roomDb = roomService.getRoomByPin(trimmedPin);
             if (roomDb.isPresent() && roomDb.get().getStatus() != Room.RoomStatus.FINISHED) {
@@ -120,7 +120,7 @@ public class LobbyController {
         if (activeRoom == null) {
             return "redirect:/?error=RoomNotFound";
         }
-
+        //intenta encontrar la sala ...
         boolean joined = gameEngine.joinPlayer(trimmedPin, playerName);
         if (!joined) {
             // Evitar nombres duplicados dentro de la misma sala

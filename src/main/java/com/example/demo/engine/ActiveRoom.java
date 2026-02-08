@@ -14,35 +14,37 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
-/**
- * Represents a running game room in memory.
- * Handles concurrency for timers and answer processing.
- */
+
 public class ActiveRoom {
+	
+	//escribir en la consola lo que va pasando y ayudar a depurar.
 
     private static final Logger logger = LoggerFactory.getLogger(ActiveRoom.class);
 
     private final String pin;
-    private final Room roomDb; // Reference to DB entity
+    private final Room roomDb; 
     private final List<Question> questions;
     private final int secondsPerQuestion;
 
-    // Concurrency components
+    // CONCURRENCIAS (HILOS)
+    
+    // hay 1 hilo dedicado solo a mirar el reloj.
     private final ScheduledExecutorService timerScheduler = Executors.newSingleThreadScheduledExecutor();
-    private final ExecutorService answerProcessor = Executors.newFixedThreadPool(10); // Process up to 10 answers in
-                                                                                      // parallel
+    // 10 HILOS --> procesar 10 respuestas de alumnos SIMULTÁNEAMENTE
+    private final ExecutorService answerProcessor = Executors.newFixedThreadPool(10); 
 
-    // State
-    private AtomicInteger currentQuestionIndex = new AtomicInteger(-1);
+    // ESTADO 
+    
+    private AtomicInteger currentQuestionIndex = new AtomicInteger(-1); 
     private AtomicBoolean isQuestionOpen = new AtomicBoolean(false);
 
-    // Players and Scores (Thread-safe)
+    // DATOS JUGADORES
+    //GUARDAR PUNTOS Y QUIÉN A RESPONDIDO
     private final ConcurrentHashMap<String, Integer> playerScores = new ConcurrentHashMap<>();
     private final ConcurrentHashMap<String, Boolean> playerAnsweredCurrentQuestion = new ConcurrentHashMap<>();
 
-    // Callbacks/Listeners could be added here for UI updates (e.g., via WebSocket
-    // if we had it, or polling)
-
+    //LOGICA JUEGO
+    //CONTRUCTOR -->  Prepara la sala con los datos que le manda el GameEngine
     public ActiveRoom(Room roomDb, List<Question> questions) {
         this.roomDb = roomDb;
         this.pin = roomDb.getPin();
@@ -54,8 +56,11 @@ public class ActiveRoom {
     /**
      * Añade un jugador a la sala activa.
      *
-     * @return true si el jugador se ha registrado nuevo, false si ya existía
+     * @putIfAbsent devuelve null si es nuevo. 
+     * Si devuelve algo, es que ya existía.
      */
+    
+    //ARRANCA LA PARTIDA
     public boolean addPlayer(String playerName) {
         return playerScores.putIfAbsent(playerName, 0) == null;
     }
@@ -66,6 +71,7 @@ public class ActiveRoom {
     }
 
     private void nextQuestion() {
+    	//// Incrementamos el índice de forma atómica 
         int index = currentQuestionIndex.incrementAndGet();
         if (index >= questions.size()) {
             finishGame();
@@ -75,11 +81,11 @@ public class ActiveRoom {
         Question q = questions.get(index);
         logger.info("[Room {}] Starting Question {}: {}", pin, index + 1, q.getEnunciado());
 
-        // Reset per-question state
+        //RESETEAMOS
         playerAnsweredCurrentQuestion.clear();
         isQuestionOpen.set(true);
 
-        // Schedule timer to close question
+        // TEMPORIZADOR
         timerScheduler.schedule(() -> {
             String threadName = Thread.currentThread().getName();
             logger.info("[Room {}] [{}] [Timer] Time up for question {}!", pin, threadName, index + 1);
@@ -87,26 +93,33 @@ public class ActiveRoom {
         }, secondsPerQuestion, TimeUnit.SECONDS);
     }
 
+    // CERRAMOS LA PREGUNTA CUANDO EL TIEMPO TERMINA
     private void closeQuestion() {
-        isQuestionOpen.set(false);
-        // Wait a bit or move immediately? For simplicity, wait 3 seconds then next
+        isQuestionOpen.set(false); // NO SE ACEPTAN + RESPUESTAS
+        
         try {
-            Thread.sleep(3000); // Simple pause between questions
+            Thread.sleep(3000); 
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }
         nextQuestion();
     }
 
+    //Termina el juego y apaga los hilos
     private void finishGame() {
         logger.info("[Room {}] Game Finished!", pin);
         isQuestionOpen.set(false);
         shutdown();
-        // Here we would save final results to DB if not done incrementally
+        //Importante: Apagar los hilos o el servidor no se cerrará bien nunca
     }
-
+    
+    //PROCESAR RESPUESTAS
     public void submitAnswer(String playerName, int selectedOption) {
-        // Submit task to thread pool
+    	/*
+    	 *	NO procesamos la respuesta en el hilo principal 
+        	La enviamos al 'answerProcessor' (el pool de 10 hilos) 
+   			para que lo haga en paralelo.
+    	 */
         answerProcessor.submit(() -> {
             String threadName = Thread.currentThread().getName();
 
@@ -121,7 +134,7 @@ public class ActiveRoom {
                 return;
             }
 
-            // Check correctness
+            // COMPROBAMOS SI ES CORRECTA 
             int idx = currentQuestionIndex.get();
             if (idx >= 0 && idx < questions.size()) {
                 Question q = questions.get(idx);
@@ -130,6 +143,7 @@ public class ActiveRoom {
                 logger.info("[Room {}] [{}] Processing answer for {}: {} (Correct: {})",
                         pin, threadName, playerName, selectedOption, correct);
 
+                //compute: función atómica para actualizar el valor del mapa.
                 if (correct) {
                     playerScores.compute(playerName, (k, v) -> v == null ? 1 : v + 1);
                 }
@@ -137,7 +151,8 @@ public class ActiveRoom {
         });
     }
 
-    // Getters for UI polling
+  
+    //INDICE PREGUNTA
     public int getCurrentQuestionIndex() {
         return currentQuestionIndex.get();
     }
@@ -146,8 +161,9 @@ public class ActiveRoom {
         return isQuestionOpen.get();
     }
 
+    //RANKING
     public Map<String, Integer> getRanking() {
-        // Return sorted copy
+
         return playerScores.entrySet().stream()
                 .sorted(Map.Entry.<String, Integer>comparingByValue().reversed())
                 .collect(Collectors.toMap(
@@ -157,6 +173,7 @@ public class ActiveRoom {
                         java.util.LinkedHashMap::new));
     }
 
+    //OBJETO PREGUNTA
     public Question getCurrentQuestion() {
         int idx = currentQuestionIndex.get();
         if (idx >= 0 && idx < questions.size())
@@ -164,6 +181,7 @@ public class ActiveRoom {
         return null;
     }
 
+    // APAGAR TODO
     public void shutdown() {
         timerScheduler.shutdown();
         answerProcessor.shutdown();

@@ -1,0 +1,133 @@
+/* Import Google Font */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;600;800&display=swap');
+
+:root {
+    --primary-color: #6a11cb;
+    --secondary-color: #2575fc;
+    --accent-color: #ff9a9e;
+    --glass-bg: rgba(255, 255, 255, 0.1);
+    --glass-border: 1px solid rgba(255, 255, 255, 0.2);
+    --glass-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+}
+
+body {
+    font-family: 'Poppins', sans-serif;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--secondary-color) 100%);
+    background-attachment: fixed;
+    color: white;
+    min-height: 100vh;
+}
+
+/* Glassmorphism Card Utils */
+.glass-card {
+    background: var(--glass-bg);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 20px;
+    border: var(--glass-border);
+    box-shadow: var(--glass-shadow);
+    color: white;
+}
+
+h1, h2, h3, h4, h5, h6 {
+    font-weight: 700;
+    text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Forms */
+label {
+    font-weight: 600;
+    margin-bottom: 5px;
+}
+
+.form-control, .form-select {
+    background: rgba(255, 255, 255, 0.9);
+    border: none;
+    border-radius: 10px;
+    padding: 10px 15px;
+}
+
+.form-control:focus {
+    box-shadow: 0 0 0 0.25rem rgba(255, 255, 255, 0.5);
+}
+
+/* Buttons */
+.btn {
+    border-radius: 50px;
+    padding: 10px 25px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    transition: all 0.3s ease;
+    border: none;
+}
+
+.btn-primary {
+    background: linear-gradient(45deg, #FF512F 0%, #DD2476 100%);
+    box-shadow: 0 4px 15px rgba(221, 36, 118, 0.4);
+}
+
+.btn-success {
+    background: linear-gradient(45deg, #11998e 0%, #38ef7d 100%);
+    box-shadow: 0 4px 15px rgba(56, 239, 125, 0.4);
+}
+
+.btn:hover {
+    transform: translateY(-3px);
+    filter: brightness(1.1);
+}
+
+/* Specific Page Styles */
+
+/* Game Player */
+.opt-btn {
+    height: 120px; 
+    font-size: 1.5rem; 
+    margin-bottom: 20px;
+    border-radius: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-shadow: 1px 1px 2px rgba(0,0,0,0.5);
+    white-space: normal; /* Allow text wrap */
+}
+
+/* Individual Option Colors (Kahoot style) */
+#btn1 { background: linear-gradient(45deg, #e23e57 0%, #ff6b6b 100%); } /* Red */
+#btn2 { background: linear-gradient(45deg, #4facfe 0%, #00f2fe 100%); } /* Blue */
+#btn3 { background: linear-gradient(45deg, #f09819 0%, #edde5d 100%); } /* Yellow */
+#btn4 { background: linear-gradient(45deg, #43e97b 0%, #38f9d7 100%); } /* Green */
+
+.opt-btn:disabled {
+    opacity: 0.6;
+    transform: none !important;
+    filter: grayscale(80%);
+}
+
+.status-bar {
+    padding: 15px;
+    border-radius: 15px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    background: rgba(0,0,0,0.3);
+}
+
+/* Animations */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.fade-in {
+    animation: fadeIn 0.6s ease-out forwards;
+}
+
+.list-group-item {
+    background: rgba(255, 255, 255, 0.1);
+    border: none;
+    color: white;
+    margin-bottom: 5px;
+    border-radius: 10px !important; 
+    font-weight: 500;
+}

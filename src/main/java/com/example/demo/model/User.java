@@ -5,7 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 @Entity
-@Table(name = "app_users") // 'user' is often a reserved keyword in SQL
+@Table(name = "app_users") 
+
 public class User {
 
     @Id
@@ -15,7 +16,8 @@ public class User {
     @Column(unique = true, nullable = false)
     private String username;
 
-    private String password; // In a real app, this should be hashed
+    private String password; 
+    
 
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Block> blocks = new ArrayList<>();

@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.stereotype.Component;
 
-@Component
+@Component //componente gestionado por Spring.
 public class DataSeeder implements CommandLineRunner {
 
     @Autowired
@@ -22,18 +22,19 @@ public class DataSeeder implements CommandLineRunner {
 
     @Override
     public void run(String... args) throws Exception {
+    	// comprobar si hay usuarios
         if (userRepository.count() == 0) {
-            System.out.println("SEEDING DATA...");
+            System.out.println("SEEDING DATA..."); 
 
-            // Create Host
+            // Crear Host
             User host = new User("profesor", "1234");
             userRepository.save(host);
 
-            // Create Block
+            // Crear Block
             Block block = new Block("Cultura General", "Preguntas variadas para probar el sistema", host);
             block = blockRepository.save(block);
 
-            // Create 25 Questions
+            // Crear 25 preguntas
             for (int i = 1; i <= 25; i++) {
                 Question q = new Question(
                         "¿Pregunta número " + i + "?",
@@ -41,13 +42,13 @@ public class DataSeeder implements CommandLineRunner {
                         "Opción B (Correcta)",
                         "Opción C (Incorrecta)",
                         "Opción D (Incorrecta)",
-                        2 // Option 2 is correct
+                        2 
                 );
-                q.setBlock(block);
-                questionRepository.save(q);
+                q.setBlock(block); // Vinculamos la pregunta al bloque "Cultura General"
+                questionRepository.save(q); //guardamos en la BBDD
             }
 
-            System.out.println("DATA SEEDED: User 'profesor', 1 Block, 25 Questions.");
+            System.out.println("DATA SEEDED: User 'profesor', 1 Block, 25 Questions."); // confirmación
         }
     }
 }

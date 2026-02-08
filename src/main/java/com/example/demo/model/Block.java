@@ -72,7 +72,7 @@ public class Block {
         this.questions = questions;
     }
 
-    // Helper to add question
+    // al_añadir_una_pregunta_le_dices_que_block_es_el_padre
     public void addQuestion(Question question) {
         questions.add(question);
         question.setBlock(this);

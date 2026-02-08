@@ -20,11 +20,14 @@ public class BlockService {
 
     @Autowired
     private QuestionRepository questionRepository;
-
+    
+    
+// OBTIENE BLOQUES DE UN PROFESOR
     public List<Block> getBlocksByUser(User user) {
         return blockRepository.findByOwnerId(user.getId());
     }
 
+    //BLOQUE VACIÍO
     public Block createBlock(String name, String description, User owner) {
         Block block = new Block(name, description, owner);
         return blockRepository.save(block);
@@ -39,12 +42,13 @@ public class BlockService {
         blockRepository.deleteById(blockId);
     }
 
-    @Transactional
+    
+    @Transactional // Si algo falla, deshace todos los cambios de esta operación
     public Question addQuestionToBlock(Long blockId, Question question) {
         Block block = blockRepository.findById(blockId)
                 .orElseThrow(() -> new RuntimeException("Block not found"));
 
-        // Basic validation
+        // VALIDACIONES
         if (question.getEnunciado() == null || question.getEnunciado().isEmpty())
             throw new RuntimeException("Enunciado empty");
         if (question.getOp1() == null || question.getOp1().isEmpty())
@@ -58,9 +62,9 @@ public class BlockService {
         if (question.getRespuCorrect() < 1 || question.getRespuCorrect() > 4)
             throw new RuntimeException("Invalid correct answer index");
 
-        block.addQuestion(question);
-        questionRepository.save(question); // Save question (block is saved via cascade or dirty checking?)
-        // Explicitly saving question usually safer if cascade not set up perfectly
+        block.addQuestion(question); //// Vincula la pregunta al bloque
+        questionRepository.save(question); // GUARDAR BBDD
+     
         return question;
     }
 

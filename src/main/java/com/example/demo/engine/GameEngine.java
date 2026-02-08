@@ -17,29 +17,36 @@ import java.util.concurrent.ConcurrentHashMap;
 public class GameEngine {
 
     @Autowired
-    private RoomService roomService; // To update DB status
+    private RoomService roomService; // actualizar el estado de la sala en la Base de Datos.
 
-    // Manage multiple rooms concurrently: Map<PIN, ActiveRoom>
+    // MAPA SALAS ACTIVAS
+
+    // permite que muchos hilos lean/escriban a la vez sin chocar.
     private final ConcurrentHashMap<String, ActiveRoom> activeRooms = new ConcurrentHashMap<>();
 
-    public void createGame(Room room, List<Question> questions) {
-        // Apply randomization if needed
+    public void createGame(Room room, List<Question> questions) { // crear una nueva partida en memoria
+
+        // copia de la lista --> no tocamos la original
         List<Question> gameQuestions = new ArrayList<>(questions);
+        // Si la sala está configurada como "Aleatoria" --> las desordenamos.
         if (room.isRandomOrder()) {
             Collections.shuffle(gameQuestions);
         }
 
-        // Limit to NumberOfQuestions if specified
+        // Si se piden menos preguntas de las que hay --> recortamos la lista
         if (room.getNumberOfQuestions() > 0 && room.getNumberOfQuestions() < gameQuestions.size()) {
             gameQuestions = gameQuestions.subList(0, room.getNumberOfQuestions());
         }
 
+        // CREACIOÓN SALA (obj que controla la logica)
         ActiveRoom activeRoom = new ActiveRoom(room, gameQuestions);
-        activeRooms.put(room.getPin(), activeRoom);
+        activeRooms.put(room.getPin(), activeRoom); // uso de PIN como llave
 
+        // ESPERANDO JUGADORES --> Actualización base de datos
         roomService.updateRoomStatus(room.getId(), RoomStatus.WAITING);
     }
 
+    // recuperar una sala --> su PIN
     public ActiveRoom getRoom(String pin) {
         return activeRooms.get(pin);
     }
@@ -51,6 +58,8 @@ public class GameEngine {
         }
         return false;
     }
+
+    // INICIAMOS JUEGO
 
     public void startGame(String pin) {
         ActiveRoom room = activeRooms.get(pin);

@@ -7,7 +7,8 @@ import java.util.Optional;
 import java.util.List;
 
 public interface RoomRepository extends JpaRepository<Room, Long> {
-    Optional<Room> findByPin(String pin);
+   
+	Optional<Room> findByPin(String pin);
 
     List<Room> findByStatus(RoomStatus status);
 }

@@ -1,31 +1,47 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Jugando...</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-    <style>
-        .opt-btn { height: 100px; font-size: 1.2rem; margin-bottom: 10px; }
-    </style>
 </head>
-<body class="bg-light">
-    <div class="container mt-3">
-        <h4>Jugador: <span th:text="${playerName}"></span></h4>
-        <div id="status" class="alert alert-info">Conectado a sala. Esperando...</div>
 
-        <div id="question-container" style="display:none;">
-            <h3 id="q-text" class="mb-4">Pregunta</h3>
-            <div class="row">
-                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(1)" id="btn1">A</button></div>
-                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(2)" id="btn2">B</button></div>
-                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(3)" id="btn3">C</button></div>
-                <div class="col-6"><button class="btn btn-primary w-100 opt-btn" onclick="send(4)" id="btn4">D</button></div>
+<body>
+    <div class="container mt-3 fade-in">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h4 class="mb-0">👤 <span th:text="${playerName}"></span></h4>
+            <span class="badge bg-light text-dark">PIN: <span th:text="${pin}"></span></span>
+        </div>
+
+        <div id="status" class="status-bar text-white" style="background: rgba(255,255,255,0.2);">
+            Conectado a sala. Esperando... ⏳
+        </div>
+
+        <div id="question-container" style="display:none;" class="fade-in">
+            <div class="glass-card p-4 mb-4 text-center">
+                <h3 id="q-text" class="mb-0">Pregunta...</h3>
+            </div>
+
+            <div class="row g-3">
+                <div class="col-6"><button class="btn w-100 opt-btn text-white" onclick="send(1)" id="btn1">🔺 Opción
+                        A</button></div>
+                <div class="col-6"><button class="btn w-100 opt-btn text-white" onclick="send(2)" id="btn2">🔷 Opción
+                        B</button></div>
+                <div class="col-6"><button class="btn w-100 opt-btn text-white" onclick="send(3)" id="btn3">🟡 Opción
+                        C</button></div>
+                <div class="col-6"><button class="btn w-100 opt-btn text-white" onclick="send(4)" id="btn4">🟩 Opción
+                        D</button></div>
             </div>
         </div>
 
-        <div id="ranking-container" class="mt-4" style="display:none;">
-            <h4>Ranking final</h4>
+        <div id="ranking-container" class="mt-4 fade-in glass-card p-4" style="display:none;">
+            <h4 class="text-center mb-3">🏆 Ranking Final</h4>
             <ul id="ranking-list" class="list-group"></ul>
+            <div class="mt-3 text-center">
+                <a href="/" class="btn btn-outline-light">Salir</a>
+            </div>
         </div>
     </div>
 
@@ -34,36 +50,39 @@
         var pin = /*[[${pin}]]*/ '0000';
         var lastIndex = -1;
 
-        setInterval(function() {
-            $.get('/game/player/poll?pin=' + pin, function(data) {
-                 if (data.status === 'FINISHED') {
-                     $('#status').text("Juego Terminado. Gracias por jugar.");
-                     $('#question-container').hide();
-                     updateRanking(data.ranking);
-                     $('#ranking-container').show();
-                     return;
-                 }
+        setInterval(function () {
+            $.get('/game/player/poll?pin=' + pin, function (data) {
+                if (data.status === 'FINISHED') {
+                    $('#status').text("Juego Terminado. Gracias por jugar.");
+                    $('#status').css('background', 'rgba(0,0,0,0.5)');
+                    $('#question-container').hide();
+                    updateRanking(data.ranking);
+                    $('#ranking-container').show();
+                    return;
+                }
 
-                 if (data.isOpen) {
-                     $('#status').text("¡Pregunta Activa!");
-                     $('#status').removeClass('alert-warning').addClass('alert-success');
-                     $('#question-container').show();
+                if (data.isOpen) {
+                    $('#status').html("¡Pregunta Activa!");
+                    $('#status').css('background', 'rgba(46, 204, 113, 0.8)'); // Greenish
+                    $('#question-container').show();
 
-                     // Update Text if new question
-                     if (data.questionIndex !== lastIndex) {
-                         $('#q-text').text(data.questionText);
-                         $('#btn1').text(data.options[0]);
-                         $('#btn2').text(data.options[1]);
-                         $('#btn3').text(data.options[2]);
-                         $('#btn4').text(data.options[3]);
-                         $('.opt-btn').prop('disabled', false); // Enable buttons
-                         lastIndex = data.questionIndex;
-                     }
-                 } else {
-                     $('#status').text("Tiempo agotado o Esperando siguiente...");
-                     $('#status').removeClass('alert-success').addClass('alert-warning');
-                     $('.opt-btn').prop('disabled', true);
-                 }
+                    // Update Text if new question
+                    if (data.questionIndex !== lastIndex) {
+                        $('#q-text').text(data.questionText);
+                        $('#btn1').text(data.options[0]);
+                        $('#btn2').text(data.options[1]);
+                        $('#btn3').text(data.options[2]);
+                        $('#btn4').text(data.options[3]);
+                        $('.opt-btn').prop('disabled', false); // Enable buttons
+                        $('.opt-btn').css('opacity', '1');
+                        lastIndex = data.questionIndex;
+                    }
+                } else {
+                    $('#status').text("⏳ Tiempo agotado o Esperando siguiente...");
+                    $('#status').css('background', 'rgba(230, 126, 34, 0.8)'); // Orange
+                    $('.opt-btn').prop('disabled', true);
+                    $('.opt-btn').css('opacity', '0.5');
+                }
             });
         }, 1000);
 
@@ -71,20 +90,28 @@
             if (!ranking) return;
             var list = $('#ranking-list');
             list.empty();
-            $.each(ranking, function(player, score) {
-                list.append('<li class="list-group-item">' + player + ': ' + score + ' pts</li>');
+            var rank = 1;
+            $.each(ranking, function (player, score) {
+                var badge = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : rank + '.'));
+                list.append('<li class="list-group-item d-flex justify-content-between align-items-center" style="background: rgba(255,255,255,0.1);">' +
+                    '<span>' + badge + ' ' + player + '</span>' +
+                    '<span class="badge bg-light text-dark rounded-pill">' + score + ' pts</span></li>');
+                rank++;
             });
         }
 
         function send(option) {
-            $.post('/game/submit', { option: option }, function(res) {
-                if(res === 'OK') {
+            $.post('/game/submit', { option: option }, function (res) {
+                if (res === 'OK') {
                     // Disable buttons immediately to prevent double vote
                     $('.opt-btn').prop('disabled', true);
+                    $('#status').text("Respuesta enviada... Esperando resultados");
+                    $('#status').css('background', 'rgba(52, 152, 219, 0.8)');
                 }
             });
         }
         /*]]>*/
     </script>
 </body>
+
 </html>

@@ -12,8 +12,9 @@ public class Player {
     @Column(nullable = false)
     private String name;
 
-    private int score = 0;
-
+    private int score = 0; //puntuación_acumulada
+    
+    //Vincula al jugador con la sala en la que está conectado
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "room_id")
     private Room room;

@@ -9,6 +9,7 @@ public class Answer {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    //quién y q respondió
     @ManyToOne
     @JoinColumn(name = "player_id")
     private Player player;
@@ -17,10 +18,11 @@ public class Answer {
     @JoinColumn(name = "question_id")
     private Question question;
 
-    private int selectedOption; // 1-4
+    //DATOS ESPECIFICOS
+    private int selectedOption; 
     private boolean correct;
 
-    private double responseTimeSeconds; // Optional: for speed bonus
+    private double responseTimeSeconds; 
 
     public Answer() {
     }

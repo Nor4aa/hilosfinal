@@ -1,29 +1,54 @@
 <!DOCTYPE html>
 <html xmlns:th="http://www.thymeleaf.org">
+
 <head>
     <title>Sala Host</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
-<body class="bg-dark text-white">
-    <div class="container mt-4 text-center">
-        <h1>PIN DE LA SALA: <span th:text="${pin}" class="display-3 text-warning">0000</span></h1>
-        
-        <div id="game-area" class="mt-5">
-            <button id="btn-start" class="btn btn-lg btn-success">INICIAR JUEGO</button>
-            <h3 id="status-msg" class="mt-3">Esperando jugadores...</h3>
+
+<body>
+    <div class="container mt-4 text-center fade-in">
+        <div class="glass-card p-4 mb-4 d-inline-block">
+            <h1 class="mb-0">PIN DE LA SALA: <span th:text="${pin}" class="display-1"
+                    style="color: var(--accent-color); font-weight: 800; letter-spacing: 5px;">0000</span></h1>
         </div>
 
-        <div id="question-area" class="mt-5" style="display:none;">
-            <h2 id="q-text">Pregunta...</h2>
-            <div class="mt-4">
-               <h4 id="timer">Tiempo: --</h4>
+        <div id="game-area" class="mt-5">
+            <div class="glass-card p-5 d-inline-block">
+                <h3 id="status-msg" class="mb-4">Esperando jugadores...</h3>
+                <button id="btn-start" class="btn btn-lg btn-success px-5 py-3" style="font-size: 1.5rem;">INICIAR JUEGO
+                    🚀</button>
             </div>
-            
+
             <div class="mt-5">
-                <h4>Ranking en Vivo</h4>
-                <ul id="ranking-list" class="list-group text-dark">
+                <h4>Jugadores Conectados:</h4>
+                <ul id="ranking-list-pre" class="list-group d-flex flex-row flex-wrap justify-content-center mt-3">
+                    <!-- Players will appear here -->
                 </ul>
+            </div>
+        </div>
+
+        <div id="question-area" class="mt-4" style="display:none;">
+            <div class="glass-card p-5 mb-4">
+                <h2 id="q-text" class="display-4 text-white">Pregunta...</h2>
+            </div>
+
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="glass-card p-3">
+                        <h4>Tiempo</h4>
+                        <h2 id="timer" class="display-3 fw-bold">--</h2>
+                    </div>
+                </div>
+                <div class="col-md-9">
+                    <div class="glass-card p-4 h-100">
+                        <h4>🏆 Ranking en Vivo</h4>
+                        <ul id="ranking-list" class="list-group mt-3" style="max-height: 400px; overflow-y: auto;">
+                        </ul>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -34,42 +59,58 @@
 
         // Empezamos a hacer polling nada más cargar la vista para ver jugadores conectados
         startPolling();
-        
-        $('#btn-start').click(function() {
-            $.post('/game/' + pin + '/start', function(res) {
-                if(res === 'OK') {
-                    $('#btn-start').hide();
-                    $('#status-msg').text('Juego Iniciado!');
+
+        $('#btn-start').click(function () {
+            $.post('/game/' + pin + '/start', function (res) {
+                if (res === 'OK') {
+                    $('#btn-start').parent().hide(); // Hide the whole waiting card
+                    $('#ranking-list-pre').parent().hide();
                     $('#question-area').show();
                 }
             });
         });
 
         function startPolling() {
-            setInterval(function() {
-                $.get('/game/host/data?pin=' + pin, function(data) {
+            setInterval(function () {
+                $.get('/game/host/data?pin=' + pin, function (data) {
                     if (data.status === 'FINISHED') {
-                        $('#q-text').text("JUEGO FINALIZADO");
+                        $('#q-text').text("¡JUEGO FINALIZADO!");
+                        $('#timer').text("END");
+                        return;
+                    }
+
+                    // Pre-game player list
+                    if (!$('#question-area').is(':visible')) {
+                        var listPre = $('#ranking-list-pre');
+                        listPre.empty();
+                        $.each(data.ranking, function (player, score) {
+                            listPre.append('<li class="m-2 px-4 py-2 glass-card" style="list-style:none;">' + player + '</li>');
+                        });
                         return;
                     }
 
                     // Update Question
                     var q = data.question;
                     if (data.isOpen) {
-                         $('#q-text').text("P" + (data.questionIndex + 1) + ": " + q.enunciado);
-                         $('#timer').text("¡RESPONDE AHORA!");
-                         $('#timer').css('color', 'green');
+                        $('#q-text').text(q.enunciado);
+                        $('#timer').text("GO!");
+                        $('#timer').css('color', '#38ef7d');
                     } else {
-                         $('#q-text').text("Tiempo agotado... Esperando siguiente...");
-                         $('#timer').text("TIEMPO AGOTADO");
-                         $('#timer').css('color', 'red');
+                        $('#q-text').text("Tiempo agotado... Esperando siguiente...");
+                        $('#timer').text("STOP");
+                        $('#timer').css('color', '#ff512f');
                     }
 
                     // Update Ranking (también hace de lista de jugadores conectados)
                     var list = $('#ranking-list');
                     list.empty();
-                    $.each(data.ranking, function(player, score) {
-                        list.append('<li class="list-group-item">' + player + ': ' + score + ' pts</li>');
+                    var rank = 1;
+                    $.each(data.ranking, function (player, score) {
+                        var badge = rank === 1 ? '🥇' : (rank === 2 ? '🥈' : (rank === 3 ? '🥉' : rank + '.'));
+                        list.append('<li class="list-group-item d-flex justify-content-between align-items-center">' +
+                            '<span>' + badge + ' ' + player + '</span>' +
+                            '<span class="badge bg-primary rounded-pill">' + score + ' pts</span></li>');
+                        rank++;
                     });
                 });
             }, 1000); // 1 second updates
@@ -77,4 +118,5 @@
         /*]]>*/
     </script>
 </body>
+
 </html>

@@ -16,6 +16,7 @@ public class Room {
     @Enumerated(EnumType.STRING)
     private RoomStatus status; // WAITING, RUNNING, FINISHED
 
+    //Relaciones: Qué profesor creó la sala y qué cuestionario se está jugando.
     @ManyToOne
     @JoinColumn(name = "host_id")
     private User host;
@@ -24,7 +25,7 @@ public class Room {
     @JoinColumn(name = "block_id")
     private Block block;
 
-    // Configuration
+    // Configurar
     private int numberOfQuestions;
     private int secondsPerQuestion;
     private boolean randomOrder;
@@ -34,7 +35,8 @@ public class Room {
     public enum RoomStatus {
         WAITING, RUNNING, FINISHED
     }
-
+    
+    //poner la fecha de creación automáticamente
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();

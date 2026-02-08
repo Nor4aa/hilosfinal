@@ -9,7 +9,7 @@
 		<relativePath/> <!-- lookup parent from repository -->
 	</parent>
 	<groupId>com.proyecto</groupId>
-	<artifactId>quizlivehilos</artifactId>
+	<artifactId>hilos</artifactId>
 	<version>0.0.1-SNAPSHOT</version>
 	<name>QuizLiveHilos</name>
 	<description>Proyecto quiz live Multi-Sala</description>

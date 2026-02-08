@@ -17,8 +17,10 @@ public class RoomService {
     @Autowired
     private RoomRepository roomRepository;
 
+    // Crea una nueva sala con las reglas que el profesor eligió
     public Room createRoom(User host, Block block, int numQuestions, int secondsPerQuestion, boolean randomOrder) {
         if (block.getQuestions().size() < 20) {
+        	//debe tener suficientes preguntas
             throw new RuntimeException("Block must have at least 20 questions to be used in a room.");
         }
 
@@ -30,11 +32,11 @@ public class RoomService {
         room.setRandomOrder(randomOrder);
         room.setStatus(RoomStatus.WAITING);
 
-        // Generate unique PIN
+        // genera una PIN úNICO
         String pin;
         do {
             pin = String.format("%04d", new Random().nextInt(10000));
-        } while (roomRepository.findByPin(pin).isPresent());
+        } while (roomRepository.findByPin(pin).isPresent()); //// Repite si el PIN ya existe
 
         room.setPin(pin);
 
@@ -48,6 +50,6 @@ public class RoomService {
     public void updateRoomStatus(Long roomId, RoomStatus status) {
         Room room = roomRepository.findById(roomId).orElseThrow();
         room.setStatus(status);
-        roomRepository.save(room);
+        roomRepository.save(room); //guardar sala en BBDD
     }
 }

@@ -21,13 +21,14 @@ public class Question {
 	@Column(nullable = false)
 	private String op4;
 
-	private int respuCorrect; // 1, 2, 3, or 4
-
+	private int respuCorrect; // cual de todas es la correcta
+	
+	// Vincula cada pregunta a su bloque (cuestionario) padre
 	@ManyToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "block_id")
 	private Block block;
 
-	// Constructors
+	// Constructor
 	public Question() {
 	}
 

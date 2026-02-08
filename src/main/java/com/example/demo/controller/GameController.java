@@ -13,6 +13,7 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import java.util.List;
 import java.util.Map;
 
+// las rutas empezaran con
 @Controller
 @RequestMapping("/game")
 public class GameController {
@@ -20,8 +21,8 @@ public class GameController {
     @Autowired
     private GameEngine gameEngine;
 
-    // HOST ACTIONS
-
+    // ACCIONES ANFITRIÓN
+    
     @PostMapping("/{pin}/start")
     @ResponseBody
     public String startGame(@PathVariable String pin) {
@@ -45,7 +46,7 @@ public class GameController {
                 "isOpen", room.isQuestionOpen());
     }
 
-    // PLAYER ACTIONS
+    // ACCIONES JUGADOR
 
     @GetMapping("/player")
     public String playerView(HttpSession session, Model model) {

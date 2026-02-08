@@ -9,6 +9,7 @@ public class RoomQuestion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    // Esto crea una tabla intermedia. Permite decir: "En la Sala X, la pregunta Y saldrá en la posición 1".
     @ManyToOne
     @JoinColumn(name = "room_id")
     private Room room;
@@ -18,7 +19,7 @@ public class RoomQuestion {
     private Question question;
 
     @Column(name = "question_order")
-    private int order; // To maintain sequence (1, 2, 3...)
+    private int order; 
 
     public RoomQuestion() {
     }
